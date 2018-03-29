@@ -1,5 +1,3 @@
-FROM golang:alpine
-
-WORKDIR /UbiAPI
-
-COPY ./prod/crud /UbiApi/
+FROM scratch
+COPY ./prod /usr/local/bin
+CMD ["crud"]
