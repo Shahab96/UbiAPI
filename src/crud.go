@@ -59,5 +59,5 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/update_check", checkUpdates).Methods("GET")
 	router.HandleFunc("/update", sendUpdate).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":80", router))
 }
