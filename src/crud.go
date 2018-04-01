@@ -2,35 +2,61 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
-// Test struct (Model)
-type Test struct {
-	Name string `json:"name"`
+func checkUpdates(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	queryParams := mux.Vars(req)
+	version := queryParams["v"]
+	currentVersion := "1.0.0"
+	if version != currentVersion {
+		json.NewEncoder(w).Encode(true)
+	}
 }
 
-var a []Test
+func sendUpdate(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/octet-stream")
+	os.Chdir("/home/shahab/go/src/github.com/shahab96/UbiAPI/src/")
+	file, err := os.Open("crud")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
 
-func getTests(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	json.NewEncoder(w).Encode(a)
-}
+	fileinfo, err := file.Stat()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-func createTests(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	var test Test
-	_ = json.NewDecoder(r.Body).Decode(&test)
-	a = append(a, test)
-	json.NewEncoder(w).Encode(a)
+	filesize := fileinfo.Size()
+	buffer := make([]byte, filesize)
+
+	// bytesread, err := file.Read(buffer)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	written, err := fmt.Fprintf(w, string(buffer))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(written)
 }
 
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/tests", getTests).Methods("GET")
-	router.HandleFunc("/tests", createTests).Methods("POST")
-	log.Fatal(http.ListenAndServe(":80", router))
+	router.HandleFunc("/update_check", checkUpdates).Methods("GET")
+	router.HandleFunc("/update", sendUpdate).Methods("GET")
+	log.Fatal(http.ListenAndServe(":8000", router))
 }
