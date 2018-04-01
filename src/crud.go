@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -21,8 +22,8 @@ func checkUpdates(w http.ResponseWriter, req *http.Request) {
 }
 
 func sendUpdate(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/octet-stream")
-	os.Chdir("/home/shahab/go/src/github.com/shahab96/UbiAPI/src/")
+	w.Header().Set("Content-Type", "application/x-executable")
+	os.Chdir("./prod")
 	file, err := os.Open("crud")
 	if err != nil {
 		fmt.Println(err)
@@ -38,15 +39,15 @@ func sendUpdate(w http.ResponseWriter, req *http.Request) {
 
 	filesize := fileinfo.Size()
 	buffer := make([]byte, filesize)
-
-	// bytesread, err := file.Read(buffer)
+	bytesread, err := file.Read(buffer)
+	w.Header().Set("Content-Length", strconv.Itoa(bytesread))
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	written, err := fmt.Fprintf(w, string(buffer))
+	written, err := fmt.Fprint(w, string(buffer))
 	if err != nil {
 		fmt.Println(err)
 		return
